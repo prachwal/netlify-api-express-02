@@ -31,17 +31,10 @@
 
 ## 📚 Dokumentacja
 
-### 📖 [Kompletna Dokumentacja Projektu](./.github/instructions/PROJECT_DOCUMENTATION.md)
-- Pełna architektura systemu
-- Netlify Blobs integration guide
-- Testing strategy i coverage requirements
-- Performance optimization guidelines
-
-### 🔧 [Wytyczne Projektowe](./.github/instructions/config.instructions.md)
-- Stack-specific coding guidelines
-- Component architecture patterns
-- Security best practices
-- Error handling standards
+### Kompletne Przewodniki
+- **[PROJECT_DOCUMENTATION.md](./.github/instructions/PROJECT_DOCUMENTATION.md)** - Kompletna dokumentacja projektu, architektura, stack technologiczny
+- **[NETLIFY_API_FRAMEWORK_GUIDE.md](./.github/instructions/NETLIFY_API_FRAMEWORK_GUIDE.md)** - Przewodnik integracji netlify-api-framework z TypeScript
+- **[config.instructions.md](./.github/instructions/config.instructions.md)** - Wytyczne kodowania i najlepsze praktyki dla AI assistants
 
 ## 🚀 Quick Start
 

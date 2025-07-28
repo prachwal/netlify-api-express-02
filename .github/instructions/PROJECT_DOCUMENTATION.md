@@ -328,6 +328,7 @@ npm run type-check   # TypeScript compilation check
 
 ### Resources
 - [Netlify Blobs Documentation](https://docs.netlify.com/build/data-and-storage/netlify-blobs/)
+- [Netlify API Framework Guide](./NETLIFY_API_FRAMEWORK_GUIDE.md) - Kompletny przewodnik integracji
 - [Vue 3 Composition API](https://vuejs.org/guide/extras/composition-api-faq.html)
 - [Tailwind CSS v4](https://tailwindcss.com/blog/tailwindcss-v4-alpha)
 - [Headless UI Vue](https://headlessui.com/vue/)

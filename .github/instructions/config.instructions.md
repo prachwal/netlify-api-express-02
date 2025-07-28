@@ -8,8 +8,9 @@ applyTo: '**'
 
 **Typ Projektu**: Nowoczesna aplikacja Vue.js 3 z Netlify Functions backend i Netlify Blobs storage
 **Stack Technologiczny**: Vue 3.5.18 + TypeScript 5.8.3 + Vite 7.0.6 + Tailwind CSS 4.1.11 + Headless UI + Pinia 3.0.3
+**Backend Framework**: netlify-api-framework 1.0.6 z TypeScript-first router i middleware system
 **Deployment**: Netlify z serverless functions i blob storage
-**Dokumentacja**: [PROJECT_DOCUMENTATION.md](./PROJECT_DOCUMENTATION.md) - kompletna dokumentacja projektu
+**Dokumentacja**: [PROJECT_DOCUMENTATION.md](./PROJECT_DOCUMENTATION.md) i [NETLIFY_API_FRAMEWORK_GUIDE.md](./NETLIFY_API_FRAMEWORK_GUIDE.md) - kompletna dokumentacja projektu
 
 ## Podejście do Kodowania
 
