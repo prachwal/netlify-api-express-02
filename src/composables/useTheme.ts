@@ -68,6 +68,15 @@ const setTheme = (newTheme: Theme) => {
     })
 }
 
+// Computed theme info for debugging
+const themeInfo = computed(() => ({
+    systemTheme: getSystemTheme(),
+    selectedTheme: theme.value,
+    effectiveTheme: actualTheme.value,
+    isDark: actualTheme.value === 'dark',
+    htmlClass: typeof document !== 'undefined' ? document.documentElement.className : ''
+}))
+
 export const useTheme = () => {
     // Initialize watch effect only once
     if (typeof window !== 'undefined' && !isWatcherInitialized) {
@@ -84,6 +93,7 @@ export const useTheme = () => {
     return {
         theme: readonly(theme),
         actualTheme: readonly(actualTheme),
+        themeInfo: readonly(themeInfo),
         setTheme,
         initializeTheme
     }
