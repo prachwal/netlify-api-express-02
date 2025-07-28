@@ -13,6 +13,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@netlify/functions": "^4.2.0",
     "pinia": "^3.0.3",
     "vue": "^3.5.18"
   },
@@ -27,7 +28,7 @@
     "happy-dom": "^18.0.1",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4.1.11",
-    "typescript": "~5.8.3",
+    "typescript": "^5.8.3",
     "vite": "^7.0.6",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.0.4"

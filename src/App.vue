@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
 import ThemeSelector from './components/ThemeSelector.vue'
+import ApiDemo from './components/ApiDemo.vue'
+import PiniaApiDemo from './components/PiniaApiDemo.vue'
 import { useTheme } from './composables/useTheme'
 import { onMounted, watchEffect } from 'vue'
 
@@ -54,5 +56,10 @@ watchEffect(() => {
     </div>
 
     <HelloWorld msg="Vite + Vue" />
+
+    <div class="mt-8 max-w-2xl space-y-6">
+      <ApiDemo />
+      <PiniaApiDemo />
+    </div>
   </div>
 </template>
