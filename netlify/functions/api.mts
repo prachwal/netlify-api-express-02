@@ -8,14 +8,14 @@ router.use(jsonBodyParser)
 router.use(errorHandlingMiddleware)
 
 // Define routes
-router.get('/hello', async (req, context) => {
+router.get('/hello', async (_req, _context) => {
   return json({
     message: 'Hello World!',
     timestamp: new Date().toISOString()
   })
 })
 
-router.get('/hello/:name', async (req, context, params) => {
+router.get('/hello/:name', async (_req, _context, params) => {
   return json({
     message: `Hello, ${params?.name}!`,
     timestamp: new Date().toISOString()
@@ -23,7 +23,7 @@ router.get('/hello/:name', async (req, context, params) => {
 })
 
 // Public routes
-router.get('/health', async (req, context) => {
+router.get('/health', async (_req, _context) => {
   return json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
