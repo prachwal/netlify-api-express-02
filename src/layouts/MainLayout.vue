@@ -92,6 +92,7 @@ const navigation = [
     { name: 'Home', href: '/' },
     { name: 'API Demo', href: '/api-demo' },
     { name: 'Components', href: '/components' },
+    { name: 'Database', href: '/database' },
     { name: 'About', href: '/about' },
 ]
 </script>

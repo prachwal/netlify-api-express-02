@@ -4,7 +4,7 @@ command = "npm run build"
 functions = "netlify/functions"
 
 [build.environment]
-NODE_VERSION = "18"
+NODE_VERSION = "22"
 
 [[headers]]
 for = "/assets/*.js"
@@ -20,6 +20,11 @@ Content-Type = "application/javascript; charset=utf-8"
 for = "*.js"
 [headers.values]
 Content-Type = "application/javascript; charset=utf-8"
+
+[[redirects]]
+from = "/api/database/*"
+to = "/.netlify/functions/database/:splat"
+status = 200
 
 [[redirects]]
 from = "/api/*"
