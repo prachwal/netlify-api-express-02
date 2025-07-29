@@ -65,12 +65,12 @@ framework/
 Framework jest dostępny lokalnie w projekcie:
 ```typescript
 // Import głównych komponentów
-import { 
-  NetlifyRouter, 
-  json, 
-  corsMiddleware, 
-  jsonBodyParser, 
-  errorHandlingMiddleware 
+import {
+  NetlifyRouter,
+  json,
+  corsMiddleware,
+  jsonBodyParser,
+  errorHandlingMiddleware
 } from './framework/index.js'
 ```
 
@@ -121,7 +121,7 @@ router.use(errorHandlingMiddleware)
 
 // Basic routes
 router.get('/hello', async (req, context) => {
-  return json({ 
+  return json({
     message: 'Hello World!',
     timestamp: new Date().toISOString()
   })
@@ -137,7 +137,7 @@ router.get('/hello/:name', async (req, context, params) => {
 
 // Health check
 router.get('/health', async (req, context) => {
-  return json({ 
+  return json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '1.0.0'
@@ -150,10 +150,10 @@ export const handler = router.handler()
 
 ### Zaawansowana Konfiguracja z Sub-routerami
 ```typescript
-import { 
-  NetlifyRouter, 
-  corsMiddleware, 
-  jsonBodyParser, 
+import {
+  NetlifyRouter,
+  corsMiddleware,
+  jsonBodyParser,
   errorHandlingMiddleware,
   authMiddleware,
   rateLimitMiddleware,
@@ -177,7 +177,7 @@ router.use(errorHandlingMiddleware)  // Error handling
 
 // Public routes
 router.get('/health', async (req, context) => {
-  return json({ 
+  return json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '1.0.0'
@@ -190,7 +190,7 @@ protectedRouter.use(authMiddleware)
 
 protectedRouter.get('/profile', async (req, context) => {
   const user = (req as any).user // Added by auth middleware
-  return json({ 
+  return json({
     user: {
       id: user.id,
       email: user.email
@@ -259,16 +259,16 @@ const handler = router.handler()
 ```typescript
 export interface RouteHandler {
   (
-    req: RequestWithParsedBody, 
-    context: Context, 
+    req: RequestWithParsedBody,
+    context: Context,
     params?: Record<string, string>
   ): Promise<Response> | Response
 }
 
 export interface Middleware {
   (
-    req: RequestWithParsedBody, 
-    context: Context, 
+    req: RequestWithParsedBody,
+    context: Context,
     next: () => Promise<Response>
   ): Promise<Response> | Response
 }
@@ -308,7 +308,7 @@ Router automatycznie obsługuje różne formaty ścieżek:
 
 #### Core Middleware
 ```typescript
-import { 
+import {
   corsMiddleware,           // CORS handling z automatic OPTIONS
   jsonBodyParser,           // JSON body parsing z error handling
   errorHandlingMiddleware,  // Comprehensive error handling
@@ -401,30 +401,30 @@ import { Middleware } from './framework/router/router.js'
 
 const customAuthMiddleware: Middleware = async (req, context, next) => {
   const authHeader = req.headers.get('Authorization')
-  
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return new Response(JSON.stringify({ 
-      error: 'Unauthorized' 
-    }), { 
+    return new Response(JSON.stringify({
+      error: 'Unauthorized'
+    }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' }
     })
   }
-  
+
   const token = authHeader.substring(7)
-  
+
   try {
     // Validate token (implement your logic)
     const user = await validateToken(token)
-    
+
     // Add user to request context
     ;(req as any).user = user
-    
+
     return next()
   } catch (error) {
-    return new Response(JSON.stringify({ 
-      error: 'Invalid token' 
-    }), { 
+    return new Response(JSON.stringify({
+      error: 'Invalid token'
+    }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' }
     })
@@ -449,25 +449,25 @@ return json({ error: 'Not found' }, 404)
 // Text responses
 return text('Hello World', 200)
 
-// HTML responses  
+// HTML responses
 return html('<h1>Hello World</h1>', 200)
 
 // Error responses z dodatkowym kontekstem
-return createErrorResponse('Bad Request', 400, { 
+return createErrorResponse('Bad Request', 400, {
   field: 'Missing required field',
-  details: 'Name is required' 
+  details: 'Name is required'
 })
 ```
 
 #### Request Processing
 ```typescript
-import { 
-  parseQueryParams, 
-  validateFields, 
-  isValidEmail, 
+import {
+  parseQueryParams,
+  validateFields,
+  isValidEmail,
   isValidId,
   sanitizeString,
-  parsePaginationParams 
+  parsePaginationParams
 } from './framework/utils/utils.js'
 
 // Parse query parameters
@@ -495,25 +495,25 @@ const body = (req as any).parsedBody
 const validation = validateFields(body, ['name', 'email', 'password'])
 
 if (!validation.isValid) {
-  return createErrorResponse('Missing required fields', 400, { 
-    missing: validation.missing 
+  return createErrorResponse('Missing required fields', 400, {
+    missing: validation.missing
   })
 }
 ```
 
 #### Logging Utilities
 ```typescript
-import { 
-  logger, 
-  log, 
-  logRequest, 
-  logPerformance, 
+import {
+  logger,
+  log,
+  logRequest,
+  logPerformance,
   logError,
-  consoleFormat 
+  consoleFormat
 } from './framework/utils/logger.js'
 
 // Structured logging z levels
-log('info', 'Request processed', { 
+log('info', 'Request processed', {
   requestId: '123',
   userId: 'user456',
   duration: '150ms'
@@ -534,7 +534,7 @@ logError(error, 'Database connection failed', {
 })
 
 // Console formatting dla development
-console.log(consoleFormat('info', 'User logged in', { 
+console.log(consoleFormat('info', 'User logged in', {
   userId: 'user123',
   timestamp: new Date().toISOString()
 }))
@@ -557,18 +557,18 @@ const stringId = generateStringId() // "id_1643723400000_xyz789"
 
 ### REST API z CRUD Operations
 ```typescript
-import { 
-  NetlifyRouter, 
-  json, 
-  jsonBodyParser, 
+import {
+  NetlifyRouter,
+  json,
+  jsonBodyParser,
   errorHandlingMiddleware,
-  createResourceRouter 
+  createResourceRouter
 } from './framework/index.js'
-import { 
-  parseQueryParams, 
-  validateFields, 
+import {
+  parseQueryParams,
+  validateFields,
   createErrorResponse,
-  parsePaginationParams 
+  parsePaginationParams
 } from './framework/utils/utils.js'
 
 const router = new NetlifyRouter()
@@ -584,11 +584,11 @@ const postsRouter = createResourceRouter({
   index: async (req, context) => {
     const queryParams = parseQueryParams(req)
     const { page, limit } = parsePaginationParams(queryParams)
-    
+
     const allPosts = Array.from(posts.values())
     const offset = (page - 1) * limit
     const paginatedPosts = allPosts.slice(offset, offset + limit)
-    
+
     return json({
       posts: paginatedPosts,
       total: allPosts.length,
@@ -599,25 +599,25 @@ const postsRouter = createResourceRouter({
   // GET /posts/:id - Get single post
   show: async (req, context, params) => {
     const post = posts.get(params?.id)
-    
+
     if (!post) {
       return createErrorResponse('Post not found', 404)
     }
-    
+
     return json({ post })
   },
 
   // POST /posts - Create new post
   create: async (req, context) => {
     const body = (req as any).parsedBody
-    
+
     const validation = validateFields(body, ['title', 'content'])
     if (!validation.isValid) {
       return createErrorResponse('Missing required fields', 400, {
         missing: validation.missing
       })
     }
-    
+
     const post = {
       id: Date.now().toString(),
       title: sanitizeString(body.title, 200),
@@ -625,20 +625,20 @@ const postsRouter = createResourceRouter({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
-    
+
     posts.set(post.id, post)
-    
+
     return json({ post }, 201)
   },
 
   // PUT /posts/:id - Update post
   update: async (req, context, params) => {
     const post = posts.get(params?.id)
-    
+
     if (!post) {
       return createErrorResponse('Post not found', 404)
     }
-    
+
     const body = (req as any).parsedBody
     const updatedPost = {
       ...post,
@@ -646,22 +646,22 @@ const postsRouter = createResourceRouter({
       id: post.id, // Prevent ID change
       updatedAt: new Date().toISOString()
     }
-    
+
     posts.set(post.id, updatedPost)
-    
+
     return json({ post: updatedPost })
   },
 
   // DELETE /posts/:id - Delete post
   destroy: async (req, context, params) => {
     const exists = posts.has(params?.id)
-    
+
     if (!exists) {
       return createErrorResponse('Post not found', 404)
     }
-    
+
     posts.delete(params?.id)
-    
+
     return json({ message: 'Post deleted successfully' })
   }
 })
@@ -679,26 +679,26 @@ router.get('/api/posts', async (req, context) => {
   const queryParams = parseQueryParams(req)
   const { page, limit } = parsePaginationParams(queryParams)
   const search = queryParams.search
-  
+
   let allPosts = Array.from(posts.values())
-  
+
   // Search filtering
   if (search) {
-    allPosts = allPosts.filter(post => 
+    allPosts = allPosts.filter(post =>
       post.title.toLowerCase().includes(search.toLowerCase()) ||
       post.content.toLowerCase().includes(search.toLowerCase())
     )
   }
-  
+
   const offset = (page - 1) * limit
   const paginatedPosts = allPosts.slice(offset, offset + limit)
-  
+
   return json({
     posts: paginatedPosts,
     total: allPosts.length,
-    pagination: { 
-      page, 
-      limit, 
+    pagination: {
+      page,
+      limit,
       totalPages: Math.ceil(allPosts.length / limit),
       hasNext: offset + limit < allPosts.length,
       hasPrev: page > 1
@@ -718,13 +718,13 @@ const router = new NetlifyRouter()
 // JWT-based authentication middleware
 const jwtAuthMiddleware: Middleware = async (req, context, next) => {
   const authHeader = req.headers.get('Authorization')
-  
+
   if (!authHeader?.startsWith('Bearer ')) {
     return json({ error: 'Missing or invalid authorization header' }, 401)
   }
-  
+
   const token = authHeader.substring(7)
-  
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     (req as any).user = decoded
@@ -738,11 +738,11 @@ const jwtAuthMiddleware: Middleware = async (req, context, next) => {
 const requireRole = (role: string): Middleware => {
   return async (req, context, next) => {
     const user = (req as any).user
-    
+
     if (!user || user.role !== role) {
       return json({ error: 'Insufficient permissions' }, 403)
     }
-    
+
     return next()
   }
 }
@@ -750,20 +750,20 @@ const requireRole = (role: string): Middleware => {
 // Public authentication endpoint
 router.post('/api/auth/login', async (req, context) => {
   const { email, password } = (req as any).parsedBody
-  
+
   // Validate credentials (implement your logic)
   const user = await validateCredentials(email, password)
-  
+
   if (!user) {
     return json({ error: 'Invalid credentials' }, 401)
   }
-  
+
   const token = jwt.sign(
     { id: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET!,
     { expiresIn: '1h' }
   )
-  
+
   return json({ token, user })
 })
 
@@ -805,9 +805,9 @@ const fileUploadMiddleware: Middleware = async (req, context, next) => {
   if (req.method !== 'POST' || !req.body) {
     return next()
   }
-  
+
   const contentType = req.headers.get('content-type')
-  
+
   if (contentType?.includes('multipart/form-data')) {
     try {
       const formData = await req.formData()
@@ -816,7 +816,7 @@ const fileUploadMiddleware: Middleware = async (req, context, next) => {
       return createErrorResponse(400, 'Invalid form data')
     }
   }
-  
+
   return next()
 }
 
@@ -825,37 +825,37 @@ router.use(fileUploadMiddleware)
 // File upload endpoint
 router.post('/api/upload', async (req, context) => {
   const formData = (req as any).formData
-  
+
   if (!formData) {
     return createErrorResponse(400, 'No form data provided')
   }
-  
+
   const file = formData.get('file') as File
-  
+
   if (!file) {
     return createErrorResponse(400, 'No file provided')
   }
-  
+
   // Validate file type and size
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
   const maxSize = 5 * 1024 * 1024 // 5MB
-  
+
   if (!allowedTypes.includes(file.type)) {
     return createErrorResponse(400, 'Invalid file type')
   }
-  
+
   if (file.size > maxSize) {
     return createErrorResponse(400, 'File too large')
   }
-  
+
   try {
     // Process file (save to storage, resize, etc.)
     const fileBuffer = await file.arrayBuffer()
     const fileName = `${Date.now()}-${file.name}`
-    
+
     // Save to Netlify Blobs or external storage
     // const savedFile = await saveFile(fileName, fileBuffer)
-    
+
     return json({
       message: 'File uploaded successfully',
       file: {
@@ -906,26 +906,26 @@ describe('API Routes', () => {
   beforeEach(() => {
     router = new NetlifyRouter()
     router.use(jsonBodyParser)
-    
+
     router.get('/test', async (req, context) => {
       return json({ message: 'test' })
     })
-    
+
     router.post('/echo', async (req, context) => {
       const body = (req as any).parsedBody
       return json({ echo: body })
     })
-    
+
     handler = router.handler()
   })
 
   it('should handle GET request', async () => {
     const request = new Request('http://localhost/.netlify/functions/api/test')
     const context = {} as any
-    
+
     const response = await handler(request, context)
     const data = await response.json()
-    
+
     expect(response.status).toBe(200)
     expect(data.message).toBe('test')
   })
@@ -937,10 +937,10 @@ describe('API Routes', () => {
       body: JSON.stringify({ hello: 'world' })
     })
     const context = {} as any
-    
+
     const response = await handler(request, context)
     const data = await response.json()
-    
+
     expect(response.status).toBe(200)
     expect(data.echo.hello).toBe('world')
   })
@@ -949,14 +949,14 @@ describe('API Routes', () => {
     router.get('/users/:id', async (req, context, params) => {
       return json({ userId: params?.id })
     })
-    
+
     const handler = router.handler()
     const request = new Request('http://localhost/.netlify/functions/api/users/123')
     const context = {} as any
-    
+
     const response = await handler(request, context)
     const data = await response.json()
-    
+
     expect(response.status).toBe(200)
     expect(data.userId).toBe('123')
   })
@@ -973,54 +973,54 @@ describe('Middleware', () => {
   it('should execute middleware in order', async () => {
     const router = new NetlifyRouter()
     const executionOrder: string[] = []
-    
+
     const middleware1: Middleware = async (req, context, next) => {
       executionOrder.push('middleware1')
       return next()
     }
-    
+
     const middleware2: Middleware = async (req, context, next) => {
       executionOrder.push('middleware2')
       return next()
     }
-    
+
     router.use(middleware1)
     router.use(middleware2)
-    
+
     router.get('/test', async (req, context) => {
       executionOrder.push('handler')
       return json({ order: executionOrder })
     })
-    
+
     const handler = router.handler()
     const request = new Request('http://localhost/.netlify/functions/api/test')
     const context = {} as any
-    
+
     const response = await handler(request, context)
     const data = await response.json()
-    
+
     expect(data.order).toEqual(['middleware1', 'middleware2', 'handler'])
   })
 
   it('should handle middleware errors', async () => {
     const router = new NetlifyRouter()
-    
+
     const errorMiddleware: Middleware = async (req, context, next) => {
       return new Response('Middleware Error', { status: 400 })
     }
-    
+
     router.use(errorMiddleware)
     router.get('/test', async (req, context) => {
       return json({ message: 'should not reach here' })
     })
-    
+
     const handler = router.handler()
     const request = new Request('http://localhost/.netlify/functions/api/test')
     const context = {} as any
-    
+
     const response = await handler(request, context)
     const text = await response.text()
-    
+
     expect(response.status).toBe(400)
     expect(text).toBe('Middleware Error')
   })
@@ -1035,7 +1035,7 @@ import { validateFields, createErrorResponse } from 'netlify-api-framework'
 
 router.post('/api/users', async (req, context) => {
   const body = (req as any).parsedBody
-  
+
   // Validate required fields
   const validation = validateFields(body, ['email', 'password', 'name'])
   if (!validation.isValid) {
@@ -1043,25 +1043,25 @@ router.post('/api/users', async (req, context) => {
       missing: validation.missing
     })
   }
-  
+
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(body.email)) {
     return createErrorResponse(400, 'Invalid email format')
   }
-  
+
   // Validate password strength
   if (body.password.length < 8) {
     return createErrorResponse(400, 'Password must be at least 8 characters')
   }
-  
+
   // Sanitize input
   const sanitizedUser = {
     email: body.email.toLowerCase().trim(),
     name: body.name.trim(),
     password: body.password // Hash in production
   }
-  
+
   // Process user creation
   return json({ message: 'User created', user: sanitizedUser })
 })
@@ -1069,10 +1069,10 @@ router.post('/api/users', async (req, context) => {
 
 ### Rate Limiting & Security Headers
 ```typescript
-import { 
-  rateLimitMiddleware, 
+import {
+  rateLimitMiddleware,
   securityHeadersMiddleware,
-  requestSizeLimitMiddleware 
+  requestSizeLimitMiddleware
 } from 'netlify-api-framework'
 
 const router = new NetlifyRouter()
@@ -1085,14 +1085,14 @@ router.use(requestSizeLimitMiddleware)    // Request size limits
 // Custom rate limiting
 const apiRateLimit: Middleware = async (req, context, next) => {
   const clientIP = context.clientContext?.ip || 'unknown'
-  
+
   // Implement rate limiting logic (use external store)
   // const isRateLimited = await checkRateLimit(clientIP)
-  
+
   // if (isRateLimited) {
   //   return new Response('Too Many Requests', { status: 429 })
   // }
-  
+
   return next()
 }
 
@@ -1118,9 +1118,9 @@ const customCache: Middleware = async (req, context, next) => {
   if (req.method !== 'GET') {
     return next()
   }
-  
+
   const cacheKey = `cache:${req.url}`
-  
+
   // Check cache (implement with external cache store)
   // const cached = await getFromCache(cacheKey)
   // if (cached) {
@@ -1128,15 +1128,15 @@ const customCache: Middleware = async (req, context, next) => {
   //     headers: { 'X-Cache': 'HIT' }
   //   })
   // }
-  
+
   const response = await next()
-  
+
   // Cache successful responses
   if (response.status === 200) {
     // await setCache(cacheKey, await response.clone().text(), 300) // 5 min TTL
     response.headers.set('X-Cache', 'MISS')
   }
-  
+
   return response
 }
 
@@ -1155,20 +1155,20 @@ router.use(compressionMiddleware)
 // Custom optimization middleware
 const optimizationMiddleware: Middleware = async (req, context, next) => {
   const start = Date.now()
-  
+
   const response = await next()
-  
+
   const duration = Date.now() - start
-  
+
   // Add performance headers
   response.headers.set('X-Response-Time', `${duration}ms`)
   response.headers.set('X-Powered-By', 'netlify-api-framework')
-  
+
   // Log slow requests
   if (duration > 1000) {
     console.warn(`Slow request: ${req.url} took ${duration}ms`)
   }
-  
+
   return response
 }
 
