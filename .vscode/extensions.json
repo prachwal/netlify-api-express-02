@@ -1,3 +1,73 @@
 {
-  "recommendations": ["Vue.volar"]
+  // Rekomendowane rozszerzenia dla Vue + Netlify + TypeScript projektu
+  "recommendations": [
+    // Essential Development Tools
+    "github.copilot",
+    "github.copilot-chat",
+    "eamodio.gitlens",
+    "donjayamanne.githistory",
+    "mhutchie.git-graph",
+    "alefragnani.project-manager",
+    // Vue.js & Frontend Development
+    "vue.volar",
+    "vue.vscode-typescript-vue-plugin",
+    "hollowtree.vue-snippets",
+    "sdras.vue-vscode-snippets",
+    "bradlc.vscode-tailwindcss",
+    "formulahendry.auto-rename-tag",
+    // TypeScript & JavaScript
+    "ms-vscode.vscode-typescript-next",
+    "sburg.vscode-javascript-booster",
+    "cmstead.jsrefactor",
+    "christian-kohler.path-intellisense",
+    "christian-kohler.npm-intellisense",
+    // Testing & Quality Assurance
+    "hbenl.vscode-test-explorer",
+    "ms-vscode.test-adapter-converter",
+    "vitest.explorer",
+    "sonarsource.sonarlint-vscode",
+    "ms-playwright.playwright",
+    // Database & API Tools
+    "mtxr.sqltools",
+    "ms-mssql.mssql",
+    "mongodb.mongodb-vscode",
+    "rangav.vscode-thunder-client",
+    "postman.postman-for-vscode",
+    "42crunch.vscode-openapi",
+    // Performance & Debugging
+    "ms-vscode.js-debug-nightly",
+    "mcu-debug.debug-tracker-vscode",
+    "wallabyjs.console-ninja",
+    "ms-vscode.vscode-json",
+    // Code Enhancement & AI
+    "visualstudioexptteam.intellicode-api-usage-examples",
+    "sourcery.sourcery",
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker",
+    // Infrastructure & DevOps
+    "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-containers",
+    "ms-azuretools.vscode-containers",
+    "foxundermoon.shell-format",
+    "timonwong.shellcheck",
+    // Documentation & Formatting
+    "davidanson.vscode-markdownlint",
+    "redhat.vscode-yaml",
+    "dotjoshjohnson.xml",
+    "esbenp.prettier-vscode",
+    "pflannery.vscode-versionlens",
+    "gruntfuggly.todo-tree",
+    // Netlify Specific
+    "netlify.netlify-vscode",
+    "ms-vscode.vscode-json",
+    "redhat.vscode-yaml"
+  ],
+  // Niechciane rozszerzenia (mogą powodować konflikty)
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript",
+    "hookyqr.beautify",
+    "ms-vscode.vscode-css",
+    "octref.vetur", // Zastąpione przez Volar
+    "bradlc.vscode-tailwindcss-old"
+  ]
 }

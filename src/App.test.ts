@@ -1,42 +1,75 @@
-import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it } from 'vitest'
+import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 
+// Mock component for router-view
+const MockComponent = {
+    template: '<div>Mock Route Component</div>'
+}
+
+// Create a test router
+const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+        { path: '/', component: MockComponent }
+    ]
+})
+
 describe('App', () => {
-    it('renders without crashing', () => {
-        const wrapper = mount(App)
+    it('renders without crashing', async () => {
+        router.push('/')
+        await router.isReady()
+
+        const wrapper = mount(App, {
+            global: {
+                plugins: [router]
+            }
+        })
         expect(wrapper.exists()).toBe(true)
     })
 
-    it('contains Vite and Vue logos', () => {
-        const wrapper = mount(App)
-        const images = wrapper.findAll('img')
-        expect(images).toHaveLength(2)
+    it('contains router-view component', async () => {
+        router.push('/')
+        await router.isReady()
 
-        const viteImg = images.find(img => img.attributes('alt') === 'Vite logo')
-        const vueImg = images.find(img => img.attributes('alt') === 'Vue logo')
+        const wrapper = mount(App, {
+            global: {
+                plugins: [router]
+            }
+        })
 
-        expect(viteImg?.exists()).toBe(true)
-        expect(vueImg?.exists()).toBe(true)
+        // Check that router-view is rendered
+        const routerView = wrapper.findComponent({ name: 'RouterView' })
+        expect(routerView.exists()).toBe(true)
     })
 
-    it('renders HelloWorld component with correct props', () => {
-        const wrapper = mount(App)
-        const helloWorld = wrapper.findComponent({ name: 'HelloWorld' })
-        expect(helloWorld.exists()).toBe(true)
-        expect(helloWorld.props('msg')).toBe('Vite + Vue')
+    it('has proper app structure', async () => {
+        router.push('/')
+        await router.isReady()
+
+        const wrapper = mount(App, {
+            global: {
+                plugins: [router]
+            }
+        })
+
+        // Check the main app container
+        const appDiv = wrapper.find('#app')
+        expect(appDiv.exists()).toBe(true)
     })
 
-    it('renders ThemeSelector component', () => {
-        const wrapper = mount(App)
-        const themeSelector = wrapper.findComponent({ name: 'ThemeSelector' })
-        expect(themeSelector.exists()).toBe(true)
-    })
+    it('renders mock route component', async () => {
+        router.push('/')
+        await router.isReady()
 
-    it('has proper dark mode classes', () => {
-        const wrapper = mount(App)
-        const mainDiv = wrapper.find('.min-h-screen')
-        expect(mainDiv.classes()).toContain('dark:bg-gray-900')
-        expect(mainDiv.classes()).toContain('dark:text-white')
+        const wrapper = mount(App, {
+            global: {
+                plugins: [router]
+            }
+        })
+
+        // Should render the mock component content
+        expect(wrapper.text()).toContain('Mock Route Component')
     })
 })

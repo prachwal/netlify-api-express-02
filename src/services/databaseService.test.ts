@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { DatabaseService, getDatabaseService } from './databaseService'
 import { neon } from '@netlify/neon'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { DatabaseService, getDatabaseService } from './databaseService'
 
 // Mock the neon function
 vi.mock('@netlify/neon', () => ({
@@ -14,11 +14,11 @@ describe('DatabaseService', () => {
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks()
-    
+
     // Create a mock SQL function
     mockSql = vi.fn()
     ;(neon as any).mockReturnValue(mockSql)
-    
+
     // Create a new instance for each test
     databaseService = new DatabaseService()
   })
@@ -30,14 +30,17 @@ describe('DatabaseService', () => {
     })
 
     it('should initialize unpooled connection when environment variable exists', () => {
+      // Clear previous calls first
+      vi.clearAllMocks()
+
       process.env.NETLIFY_DATABASE_URL_UNPOOLED = 'test-unpooled-url'
-      
+
       const serviceWithUnpooled = new DatabaseService()
-      
+
       expect(neon).toHaveBeenCalledTimes(2)
       expect(neon).toHaveBeenCalledWith('test-unpooled-url')
       expect(serviceWithUnpooled).toBeDefined()
-      
+
       // Clean up
       delete process.env.NETLIFY_DATABASE_URL_UNPOOLED
     })
@@ -206,7 +209,7 @@ describe('DatabaseService', () => {
         { table_name: 'users' },
         { table_name: 'posts' }
       ]
-      
+
       mockSql
         .mockResolvedValueOnce(mockTimeResult)
         .mockResolvedValueOnce(mockTablesResult)
@@ -235,10 +238,10 @@ describe('DatabaseService', () => {
   describe('transaction', () => {
     it('should execute callback within transaction', async () => {
       process.env.NETLIFY_DATABASE_URL_UNPOOLED = 'test-unpooled-url'
-      
+
       const mockUnpooledSql = vi.fn()
       ;(neon as any).mockReturnValue(mockUnpooledSql)
-      
+
       const databaseService = new DatabaseService()
       const callback = vi.fn().mockResolvedValue('success')
 
@@ -255,10 +258,10 @@ describe('DatabaseService', () => {
 
     it('should rollback on error', async () => {
       process.env.NETLIFY_DATABASE_URL_UNPOOLED = 'test-unpooled-url'
-      
+
       const mockUnpooledSql = vi.fn()
       ;(neon as any).mockReturnValue(mockUnpooledSql)
-      
+
       const databaseService = new DatabaseService()
       const error = new Error('Transaction failed')
       const callback = vi.fn().mockRejectedValue(error)

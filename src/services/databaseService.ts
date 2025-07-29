@@ -42,11 +42,11 @@ export class DatabaseService {
      */
     async query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
         try {
-            if (params.length > 0) {
-                // Use parameterized query for safety
+            if (params !== undefined && Array.isArray(params)) {
+                // Use parameterized query for safety (even with empty params array)
                 return await this.sql(sql, params) as T[]
             } else {
-                // Template literal for simple queries
+                // Template literal for simple queries when no params provided at all
                 return await this.sql`${sql}` as T[]
             }
         } catch (error) {
@@ -131,12 +131,10 @@ export class DatabaseService {
      * List tables in database
      */
     async listTables(): Promise<string[]> {
-        const results = await this.query<{ table_name: string }>(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public'
-      ORDER BY table_name
-    `)
+        const results = await this.query<{ table_name: string }>(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name",
+            []
+        )
 
         return results.map(row => row.table_name)
     }
@@ -146,7 +144,7 @@ export class DatabaseService {
      */
     async getTableSchema(tableName: string): Promise<any[]> {
         return await this.query(`
-      SELECT 
+      SELECT
         column_name,
         data_type,
         is_nullable,

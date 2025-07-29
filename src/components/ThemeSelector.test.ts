@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ThemeSelector from './ThemeSelector.vue'
 
 // Mock useTheme composable
@@ -46,9 +46,39 @@ describe('ThemeSelector', () => {
     it('przyciski mają odpowiednią strukturę', () => {
         const buttons = wrapper.findAll('button')
         buttons.forEach((button: any) => {
-            expect(button.classes()).toContain('px-3')
-            expect(button.classes()).toContain('py-2')
-            expect(button.classes()).toContain('rounded-md')
+            // Sprawdź podstawowe klasy komponentu
+            expect(button.classes()).toContain('theme-button')
+            expect(button.classes()).toContain('transition-all')
+            expect(button.classes()).toContain('duration-200')
+            expect(button.classes()).toContain('ease-in-out')
+
+            // Sprawdź że ma jeden z trybów: normal lub icon-only
+            const hasMode = button.classes().includes('normal') || button.classes().includes('icon-only')
+            expect(hasMode).toBe(true)
+
+            // Sprawdź że ma jeden ze stanów: active lub inactive
+            const hasState = button.classes().includes('active') || button.classes().includes('inactive')
+            expect(hasState).toBe(true)
+        })
+    })
+
+    it('każdy przycisk zawiera ikonę', () => {
+        const buttons = wrapper.findAll('button')
+        buttons.forEach((button: any) => {
+            const icon = button.find('.icon')
+            expect(icon.exists()).toBe(true)
+            // Sprawdź że ikona to element SVG
+            expect(icon.element.tagName.toLowerCase()).toBe('svg')
+        })
+    })
+
+    it('w trybie normal przyciski zawierają etykiety', () => {
+        // Component domyślnie jest w trybie 'normal'
+        const buttons = wrapper.findAll('button')
+        buttons.forEach((button: any) => {
+            const label = button.find('.label')
+            expect(label.exists()).toBe(true)
+            expect(label.text().length).toBeGreaterThan(0)
         })
     })
 })
