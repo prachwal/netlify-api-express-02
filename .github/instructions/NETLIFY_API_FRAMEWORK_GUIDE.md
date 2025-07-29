@@ -8,27 +8,70 @@
 
 ### Core Features
 - **TypeScript-First** - Pełne wsparcie TypeScript z comprehensive type definitions
-- **Modern Fetch API** - Zbudowany na web standards, bez legacy dependencies
-- **Zero Dependencies** - Lightweight z minimal external dependencies
-- **ES Modules** - Nowoczesna architektura modułowa
+- **Modern Web Standards** - Zbudowany na Request/Response API z automatyczną konwersją do Netlify
+- **Zero External Dependencies** - Lightweight framework bez dodatkowych zależności
+- **ES Modules** - Nowoczesna architektura modułowa z .js imports
+
+### Router System
+- **NetlifyRouter Class** - Główna klasa routera z middleware support
+- **HTTP Methods** - GET, POST, PUT, DELETE, PATCH, OPTIONS
+- **Sub-router Mounting** - Montowanie sub-routerów z path prefixes
+- **Automatic Path Handling** - Obsługa lokalnych (/api) i Netlify (/.netlify/functions/api) ścieżek
 
 ### Middleware System
-- **Comprehensive Middleware** - Authentication, CORS, rate limiting, security headers
+- **Comprehensive Middleware** - CORS, authentication, JSON parsing, error handling
 - **Custom Middleware** - Easy creation of custom middleware functions
-- **Middleware Composition** - Flexible middleware stacking and ordering
+- **Middleware Composition** - Flexible middleware stacking w reverse order
 - **Built-in Security** - Security headers, request validation, error handling
 
-### Routing & Performance
-- **Dynamic Route Parameters** - Automatic parsing z type safety
-- **Performance Monitoring** - Built-in metrics i logging
-- **Error Handling** - Comprehensive error handling i validation
-- **Testing Support** - Full test suite z Vitest integration
+### Dynamic Routes & Performance
+- **Dynamic Route Parameters** - Automatic parsing z type safety (:id, :name)
+- **Query Parameters** - Built-in parsing z parseQueryParams utility
+- **Performance Monitoring** - Built-in request/response timing
+- **Error Handling** - Comprehensive error handling z proper HTTP status codes
 
 ## 📦 Instalacja i Konfiguracja
 
+### Framework Structure
+Framework składa się z następujących komponentów:
+```
+framework/
+├── index.ts              # Main exports
+├── router/
+│   └── router.ts         # NetlifyRouter class
+├── middleware/
+│   ├── index.ts          # Middleware exports
+│   ├── cors.ts           # CORS middleware
+│   ├── json-body-parser.ts # JSON parsing
+│   ├── auth.ts           # Authentication
+│   ├── rate-limit.ts     # Rate limiting
+│   └── advanced/         # Advanced middleware
+│       ├── error-handling.ts
+│       ├── cache.ts
+│       ├── compression.ts
+│       ├── performance.ts
+│       ├── request-id.ts
+│       ├── security-headers.ts
+│       └── request-size-limit.ts
+├── utils/
+│   ├── utils.ts          # Utility functions
+│   ├── logger.ts         # Logging utilities
+│   └── jwtUtils.ts       # JWT utilities
+└── types/
+    └── index.ts          # TypeScript definitions
+```
+
 ### Podstawowa Instalacja
-```bash
-npm install netlify-api-framework
+Framework jest dostępny lokalnie w projekcie:
+```typescript
+// Import głównych komponentów
+import { 
+  NetlifyRouter, 
+  json, 
+  corsMiddleware, 
+  jsonBodyParser, 
+  errorHandlingMiddleware 
+} from './framework/index.js'
 ```
 
 ### Konfiguracja TypeScript
@@ -67,11 +110,11 @@ npm install netlify-api-framework
 ### Minimalna Konfiguracja
 ```typescript
 // netlify/functions/api.mts
-import { NetlifyRouter, corsMiddleware, jsonBodyParser, errorHandlingMiddleware, json } from 'netlify-api-framework'
+import { NetlifyRouter, corsMiddleware, jsonBodyParser, errorHandlingMiddleware, json } from './framework/index.js'
 
 const router = new NetlifyRouter()
 
-// Global middleware
+// Global middleware - kolejność ma znaczenie!
 router.use(corsMiddleware)
 router.use(jsonBodyParser)
 router.use(errorHandlingMiddleware)
@@ -84,17 +127,28 @@ router.get('/hello', async (req, context) => {
   })
 })
 
+// Route z parametrami
+router.get('/hello/:name', async (req, context, params) => {
+  return json({
+    message: `Hello, ${params?.name}!`,
+    timestamp: new Date().toISOString()
+  })
+})
+
+// Health check
 router.get('/health', async (req, context) => {
   return json({ 
     status: 'healthy',
+    timestamp: new Date().toISOString(),
     version: '1.0.0'
   })
 })
 
+// Export handler dla Netlify
 export const handler = router.handler()
 ```
 
-### Zaawansowana Konfiguracja z Middleware Stack
+### Zaawansowana Konfiguracja z Sub-routerami
 ```typescript
 import { 
   NetlifyRouter, 
@@ -106,12 +160,13 @@ import {
   requestIdMiddleware,
   securityHeadersMiddleware,
   performanceMiddleware,
-  json
-} from 'netlify-api-framework'
+  json,
+  createResourceRouter
+} from './framework/index.js'
 
 const router = new NetlifyRouter()
 
-// Complete middleware stack
+// Complete middleware stack - order matters!
 router.use(requestIdMiddleware)      // Request tracking
 router.use(securityHeadersMiddleware) // Security headers
 router.use(corsMiddleware)           // CORS handling
@@ -121,7 +176,7 @@ router.use(performanceMiddleware)    // Performance monitoring
 router.use(errorHandlingMiddleware)  // Error handling
 
 // Public routes
-router.get('/api/health', async (req, context) => {
+router.get('/health', async (req, context) => {
   return json({ 
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -129,7 +184,7 @@ router.get('/api/health', async (req, context) => {
   })
 })
 
-// Protected routes with sub-router
+// Protected sub-router
 const protectedRouter = new NetlifyRouter()
 protectedRouter.use(authMiddleware)
 
@@ -143,8 +198,35 @@ protectedRouter.get('/profile', async (req, context) => {
   })
 })
 
-// Mount protected routes
-router.use('/api/protected', protectedRouter)
+// Resource router for CRUD operations
+const postsRouter = createResourceRouter({
+  index: async (req, context) => {
+    // GET /posts
+    return json({ posts: [] })
+  },
+  show: async (req, context, params) => {
+    // GET /posts/:id
+    return json({ post: { id: params?.id } })
+  },
+  create: async (req, context) => {
+    // POST /posts
+    const body = (req as any).parsedBody
+    return json({ post: body }, 201)
+  },
+  update: async (req, context, params) => {
+    // PUT /posts/:id
+    const body = (req as any).parsedBody
+    return json({ post: { id: params?.id, ...body } })
+  },
+  destroy: async (req, context, params) => {
+    // DELETE /posts/:id
+    return json({ message: 'Post deleted successfully' })
+  }
+})
+
+// Mount sub-routers
+router.use('/protected', protectedRouter)
+router.use('/posts', postsRouter)
 
 export const handler = router.handler()
 ```
@@ -153,31 +235,50 @@ export const handler = router.handler()
 
 ### NetlifyRouter Class
 
-#### HTTP Methods
+#### Constructor i Podstawowe Metody
 ```typescript
 const router = new NetlifyRouter()
 
-// Standard HTTP methods
-router.get(path, handler)
-router.post(path, handler)
-router.put(path, handler)
-router.delete(path, handler)
-router.patch(path, handler)
-router.options(path, handler)
+// HTTP Methods
+router.get(path: string, handler: RouteHandler): void
+router.post(path: string, handler: RouteHandler): void
+router.put(path: string, handler: RouteHandler): void
+router.delete(path: string, handler: RouteHandler): void
+router.patch(path: string, handler: RouteHandler): void
+router.options(path: string, handler: RouteHandler): void
 
 // Middleware registration
-router.use(middleware)
-router.use(path, subRouter)
+router.use(middleware: Middleware): void
+router.use(path: string, subRouter: NetlifyRouter): void
 
 // Handler generation
 const handler = router.handler()
 ```
 
+#### Route Handler Signature
+```typescript
+export interface RouteHandler {
+  (
+    req: RequestWithParsedBody, 
+    context: Context, 
+    params?: Record<string, string>
+  ): Promise<Response> | Response
+}
+
+export interface Middleware {
+  (
+    req: RequestWithParsedBody, 
+    context: Context, 
+    next: () => Promise<Response>
+  ): Promise<Response> | Response
+}
+```
+
 #### Route Parameters
 ```typescript
-// Dynamic route parameters
+// Dynamic route parameters - automatyczne parsowanie
 router.get('/users/:id', async (req, context, params) => {
-  const userId = params?.id
+  const userId = params?.id  // string | undefined
   return json({ userId })
 })
 
@@ -187,7 +288,9 @@ router.get('/users/:userId/posts/:postId', async (req, context, params) => {
   return json({ userId, postId })
 })
 
-// Query parameters
+// Query parameters z parseQueryParams
+import { parseQueryParams } from './framework/utils/utils.js'
+
 router.get('/search', async (req, context) => {
   const queryParams = parseQueryParams(req)
   const { q, limit, offset } = queryParams
@@ -195,35 +298,117 @@ router.get('/search', async (req, context) => {
 })
 ```
 
+#### Path Handling
+Router automatycznie obsługuje różne formaty ścieżek:
+- **Local development**: `/api/endpoint`
+- **Netlify Functions**: `/.netlify/functions/api/endpoint`
+- **Trailing slashes**: Automatycznie ignorowane
+
 ### Built-in Middleware
 
 #### Core Middleware
 ```typescript
 import { 
-  corsMiddleware,           // CORS handling
-  jsonBodyParser,           // JSON body parsing
-  errorHandlingMiddleware,  // Error handling
-  authMiddleware,          // Authentication
-  rateLimitMiddleware,     // Rate limiting
+  corsMiddleware,           // CORS handling z automatic OPTIONS
+  jsonBodyParser,           // JSON body parsing z error handling
+  errorHandlingMiddleware,  // Comprehensive error handling
+  authMiddleware,          // JWT-based authentication
+  rateLimitMiddleware,     // Request rate limiting
+  loggingMiddleware        // Request/response logging
+} from './framework/middleware/index.js'
+
+// Advanced middleware
+import {
   requestIdMiddleware,     // Request ID generation
-  securityHeadersMiddleware, // Security headers
+  securityHeadersMiddleware, // Security headers (HSTS, CSP, etc.)
   performanceMiddleware,   // Performance monitoring
   cacheMiddleware,         // Response caching
   compressionMiddleware,   // Response compression
   requestSizeLimitMiddleware, // Request size limits
-  loggingMiddleware        // Request logging
-} from 'netlify-api-framework'
+} from './framework/middleware/index.js'
+```
+
+#### Middleware Implementation Details
+
+##### CORS Middleware
+```typescript
+// Automatycznie obsługuje OPTIONS preflight
+// Dodaje headers do wszystkich responses
+export const corsMiddleware: Middleware = async (req, _context, next) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With'
+      }
+    })
+  }
+  // ... adds headers to response
+}
+```
+
+##### JSON Body Parser
+```typescript
+// Automatycznie parsuje JSON dla POST/PUT/PATCH
+// Dodaje parsedBody do request object
+export const jsonBodyParser: Middleware = async (req, _context, next) => {
+  if (req.method !== 'GET' && req.method !== 'DELETE') {
+    try {
+      const contentType = req.headers.get('content-type')
+      if (contentType && contentType.includes('application/json')) {
+        const requestClone = req.clone()
+        const text = await requestClone.text()
+        if (text.trim()) {
+          const body = JSON.parse(text)
+          ;(req as RequestWithParsedBody).parsedBody = body
+        }
+      }
+    } catch (error) {
+      // Returns 400 error for invalid JSON
+    }
+  }
+  return await next()
+}
+```
+
+##### Error Handling Middleware
+```typescript
+// Catch-all error handler z logging
+export const errorHandlingMiddleware: Middleware = async (req, context, next) => {
+  try {
+    return await next()
+  } catch (error) {
+    const requestId = (context as any).requestId || `req_${Date.now()}`
+    // Logs error with context
+    return new Response(JSON.stringify({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      requestId,
+      timestamp: new Date().toISOString()
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+}
 ```
 
 #### Custom Middleware Creation
 ```typescript
-import { Middleware } from 'netlify-api-framework'
+import { Middleware } from './framework/router/router.js'
 
 const customAuthMiddleware: Middleware = async (req, context, next) => {
   const authHeader = req.headers.get('Authorization')
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return new Response('Unauthorized', { status: 401 })
+    return new Response(JSON.stringify({ 
+      error: 'Unauthorized' 
+    }), { 
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
   
   const token = authHeader.substring(7)
@@ -233,53 +418,84 @@ const customAuthMiddleware: Middleware = async (req, context, next) => {
     const user = await validateToken(token)
     
     // Add user to request context
-    (req as any).user = user
+    ;(req as any).user = user
     
     return next()
   } catch (error) {
-    return new Response('Invalid token', { status: 401 })
+    return new Response(JSON.stringify({ 
+      error: 'Invalid token' 
+    }), { 
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 }
 
-router.use('/api/protected', customAuthMiddleware)
+// Usage
+router.use('/protected', customAuthMiddleware)
 ```
 
 ### Utility Functions
 
 #### Response Helpers
 ```typescript
-import { json, text, html, createErrorResponse } from 'netlify-api-framework'
+import { json, text, html } from './framework/router/router.js'
+import { createErrorResponse } from './framework/utils/utils.js'
 
-// JSON responses
+// JSON responses - główna metoda
 return json({ data: 'value' }, 200)
 return json({ error: 'Not found' }, 404)
 
 // Text responses
 return text('Hello World', 200)
 
-// HTML responses
+// HTML responses  
 return html('<h1>Hello World</h1>', 200)
 
-// Error responses
-return createErrorResponse(400, 'Bad Request', { 
-  field: 'Missing required field' 
+// Error responses z dodatkowym kontekstem
+return createErrorResponse('Bad Request', 400, { 
+  field: 'Missing required field',
+  details: 'Name is required' 
 })
 ```
 
 #### Request Processing
 ```typescript
-import { parseQueryParams, validateFields } from 'netlify-api-framework'
+import { 
+  parseQueryParams, 
+  validateFields, 
+  isValidEmail, 
+  isValidId,
+  sanitizeString,
+  parsePaginationParams 
+} from './framework/utils/utils.js'
 
 // Parse query parameters
 const params = parseQueryParams(req)
 const { search, page, limit } = params
+
+// Validate email
+if (!isValidEmail(body.email)) {
+  return createErrorResponse('Invalid email format', 400)
+}
+
+// Validate ID (number or UUID)
+if (!isValidId(params?.id)) {
+  return createErrorResponse('Invalid ID format', 400)
+}
+
+// Sanitize string input
+const name = sanitizeString(body.name, 100) // max 100 chars
+
+// Parse pagination
+const { page, limit } = parsePaginationParams(params)
 
 // Validate request body fields
 const body = (req as any).parsedBody
 const validation = validateFields(body, ['name', 'email', 'password'])
 
 if (!validation.isValid) {
-  return createErrorResponse(400, 'Missing required fields', { 
+  return createErrorResponse('Missing required fields', 400, { 
     missing: validation.missing 
   })
 }
@@ -287,26 +503,73 @@ if (!validation.isValid) {
 
 #### Logging Utilities
 ```typescript
-import { consoleFormat } from 'netlify-api-framework'
+import { 
+  logger, 
+  log, 
+  logRequest, 
+  logPerformance, 
+  logError,
+  consoleFormat 
+} from './framework/utils/logger.js'
 
-// Structured logging
-console.log(consoleFormat('info', 'Request processed', { 
+// Structured logging z levels
+log('info', 'Request processed', { 
   requestId: '123',
   userId: 'user456',
   duration: '150ms'
-}))
+})
 
-console.error(consoleFormat('error', 'Database connection failed', {
-  error: error.message,
-  stack: error.stack
+// Request logging
+logRequest(req, context, 'GET /api/users')
+
+// Performance logging
+const start = Date.now()
+// ... operation
+logPerformance('Database query', Date.now() - start, { table: 'users' })
+
+// Error logging z stack trace
+logError(error, 'Database connection failed', {
+  requestId: context.requestId,
+  userId: req.user?.id
+})
+
+// Console formatting dla development
+console.log(consoleFormat('info', 'User logged in', { 
+  userId: 'user123',
+  timestamp: new Date().toISOString()
 }))
+```
+
+#### ID Generation & Validation
+```typescript
+import { generateId, generateStringId } from './framework/utils/utils.js'
+
+// Generate unique ID
+const id = generateId() // "id_1643723400000_abc123def"
+
+// Generate string-based ID
+const stringId = generateStringId() // "id_1643723400000_xyz789"
+
+// Both functions generate time-based unique identifiers
 ```
 
 ## 📚 Wzorce Implementacji
 
 ### REST API z CRUD Operations
 ```typescript
-import { NetlifyRouter, json, jsonBodyParser, errorHandlingMiddleware, parseQueryParams } from 'netlify-api-framework'
+import { 
+  NetlifyRouter, 
+  json, 
+  jsonBodyParser, 
+  errorHandlingMiddleware,
+  createResourceRouter 
+} from './framework/index.js'
+import { 
+  parseQueryParams, 
+  validateFields, 
+  createErrorResponse,
+  parsePaginationParams 
+} from './framework/utils/utils.js'
 
 const router = new NetlifyRouter()
 router.use(jsonBodyParser)
@@ -315,91 +578,134 @@ router.use(errorHandlingMiddleware)
 // In-memory store (use database in production)
 const posts = new Map()
 
-// GET /api/posts - List all posts
+// Resource router approach (recommended)
+const postsRouter = createResourceRouter({
+  // GET /posts - List all posts with pagination
+  index: async (req, context) => {
+    const queryParams = parseQueryParams(req)
+    const { page, limit } = parsePaginationParams(queryParams)
+    
+    const allPosts = Array.from(posts.values())
+    const offset = (page - 1) * limit
+    const paginatedPosts = allPosts.slice(offset, offset + limit)
+    
+    return json({
+      posts: paginatedPosts,
+      total: allPosts.length,
+      pagination: { page, limit, totalPages: Math.ceil(allPosts.length / limit) }
+    })
+  },
+
+  // GET /posts/:id - Get single post
+  show: async (req, context, params) => {
+    const post = posts.get(params?.id)
+    
+    if (!post) {
+      return createErrorResponse('Post not found', 404)
+    }
+    
+    return json({ post })
+  },
+
+  // POST /posts - Create new post
+  create: async (req, context) => {
+    const body = (req as any).parsedBody
+    
+    const validation = validateFields(body, ['title', 'content'])
+    if (!validation.isValid) {
+      return createErrorResponse('Missing required fields', 400, {
+        missing: validation.missing
+      })
+    }
+    
+    const post = {
+      id: Date.now().toString(),
+      title: sanitizeString(body.title, 200),
+      content: sanitizeString(body.content, 5000),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    posts.set(post.id, post)
+    
+    return json({ post }, 201)
+  },
+
+  // PUT /posts/:id - Update post
+  update: async (req, context, params) => {
+    const post = posts.get(params?.id)
+    
+    if (!post) {
+      return createErrorResponse('Post not found', 404)
+    }
+    
+    const body = (req as any).parsedBody
+    const updatedPost = {
+      ...post,
+      ...body,
+      id: post.id, // Prevent ID change
+      updatedAt: new Date().toISOString()
+    }
+    
+    posts.set(post.id, updatedPost)
+    
+    return json({ post: updatedPost })
+  },
+
+  // DELETE /posts/:id - Delete post
+  destroy: async (req, context, params) => {
+    const exists = posts.has(params?.id)
+    
+    if (!exists) {
+      return createErrorResponse('Post not found', 404)
+    }
+    
+    posts.delete(params?.id)
+    
+    return json({ message: 'Post deleted successfully' })
+  }
+})
+
+// Mount resource router
+router.use('/posts', postsRouter)
+
+export const handler = router.handler()
+```
+
+### Manual CRUD Implementation (alternative)
+```typescript
+// If you prefer manual route definitions
 router.get('/api/posts', async (req, context) => {
   const queryParams = parseQueryParams(req)
-  const limit = parseInt(queryParams.limit || '10')
-  const offset = parseInt(queryParams.offset || '0')
+  const { page, limit } = parsePaginationParams(queryParams)
+  const search = queryParams.search
   
-  const allPosts = Array.from(posts.values())
+  let allPosts = Array.from(posts.values())
+  
+  // Search filtering
+  if (search) {
+    allPosts = allPosts.filter(post => 
+      post.title.toLowerCase().includes(search.toLowerCase()) ||
+      post.content.toLowerCase().includes(search.toLowerCase())
+    )
+  }
+  
+  const offset = (page - 1) * limit
   const paginatedPosts = allPosts.slice(offset, offset + limit)
   
   return json({
     posts: paginatedPosts,
     total: allPosts.length,
-    pagination: { limit, offset }
+    pagination: { 
+      page, 
+      limit, 
+      totalPages: Math.ceil(allPosts.length / limit),
+      hasNext: offset + limit < allPosts.length,
+      hasPrev: page > 1
+    },
+    search
   })
 })
-
-// GET /api/posts/:id - Get single post
-router.get('/api/posts/:id', async (req, context, params) => {
-  const post = posts.get(params?.id)
-  
-  if (!post) {
-    return json({ error: 'Post not found' }, 404)
-  }
-  
-  return json({ post })
-})
-
-// POST /api/posts - Create new post
-router.post('/api/posts', async (req, context) => {
-  const body = (req as any).parsedBody
-  
-  const validation = validateFields(body, ['title', 'content'])
-  if (!validation.isValid) {
-    return createErrorResponse(400, 'Missing required fields', {
-      missing: validation.missing
-    })
-  }
-  
-  const post = {
-    id: Date.now().toString(),
-    title: body.title,
-    content: body.content,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-  
-  posts.set(post.id, post)
-  
-  return json({ post }, 201)
-})
-
-// PUT /api/posts/:id - Update post
-router.put('/api/posts/:id', async (req, context, params) => {
-  const post = posts.get(params?.id)
-  
-  if (!post) {
-    return json({ error: 'Post not found' }, 404)
-  }
-  
-  const body = (req as any).parsedBody
-  const updatedPost = {
-    ...post,
-    ...body,
-    updatedAt: new Date().toISOString()
-  }
-  
-  posts.set(post.id, updatedPost)
-  
-  return json({ post: updatedPost })
-})
-
-// DELETE /api/posts/:id - Delete post
-router.delete('/api/posts/:id', async (req, context, params) => {
-  const exists = posts.has(params?.id)
-  
-  if (!exists) {
-    return json({ error: 'Post not found' }, 404)
-  }
-  
-  posts.delete(params?.id)
-  
-  return json({ message: 'Post deleted successfully' })
-})
-
-export const handler = router.handler()
 ```
 
 ### Authentication & Authorization
@@ -878,18 +1184,25 @@ router.use(optimizationMiddleware)
 - **Debugging**: Enable logging middleware dla development
 
 ### Framework Resources
-- **GitHub Repository**: [netlify-api-framework](https://github.com/prachwal/netlify-api-framework)
-- **NPM Package**: [netlify-api-framework](https://www.npmjs.com/package/netlify-api-framework)
-- **TypeScript Support**: Built-in type definitions
-- **Testing**: Vitest integration examples
+- **Local Framework**: Dostępny w `tmp/netlify/framework/`
+- **TypeScript Support**: Built-in type definitions w `types/index.ts`
+- **ESM Modules**: Wszystkie importy używają `.js` extensions
+- **Testing**: Framework ready dla Vitest integration
 
-### Integration Guidelines
-- Follow middleware composition patterns
-- Use TypeScript strict mode
-- Implement comprehensive error handling
-- Add performance monitoring
-- Maintain security best practices
+### Implementation Guidelines
+- **Middleware Order**: Kolejność ma znaczenie - error handling na końcu
+- **ESM Imports**: Używaj `.js` extensions w importach TypeScript
+- **Type Safety**: Wykorzystuj interface definitions z `types/index.ts`
+- **Error Handling**: Zawsze używaj `createErrorResponse` dla consistent error format
+- **Logging**: Używaj structured logging z framework utilities
+- **Security**: Implementuj input validation i sanitization
+
+### Performance Best Practices
+- **Middleware Composition**: Unikaj nadmiernego stackowania middleware
+- **Response Caching**: Używaj cache middleware dla statycznych responses
+- **Request Size Limits**: Implementuj limits dla upload endpoints
+- **Database Connections**: Używaj connection pooling w production
 
 ---
 
-**Framework zaprojektowany dla production-ready Netlify Functions z focus na bezpieczeństwo, wydajność i developer experience.**
+**Framework zaprojektowany dla production-ready Netlify Functions z focus na type safety, performance i developer experience.**
